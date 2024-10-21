@@ -1,54 +1,62 @@
 <!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Files</title>
-    <script>
-        async function uploadFiles() {
-            const name = document.getElementById('name').value;
-            const files = document.getElementById('files').files;
-            const fileDataArray = [];
-
-            for (const file of files) {
-                const reader = new FileReader();
-                reader.onload = async (e) => {
-                    const base64Data = e.target.result.split(',')[1]; // Get base64 data
-                    const fileData = {
-                        name: file.name,
-                        mimeType: file.type,
-                        data: base64Data
-                    };
-                    fileDataArray.push(fileData);
-
-                    // If all files have been read, send data to the server
-                    if (fileDataArray.length === files.length) {
-                        const response = await fetch('https://script.google.com/macros/s/AKfycbycqXdUDKUZwah-YokApR1bLOu1vhNivPUqYVVS6UuygW7VugsSC_XvHduxda3Dwmp7/exec', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({ name, files: JSON.stringify(fileDataArray) })
-                        });
-                        const result = await response.json();
-                        alert(result.message); // แสดงข้อความจาก Google Apps Script
-                    }
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-    </script>
-</head>
-<body>
-    <h1>Upload Files</h1>
-    <form id="uploadForm" onsubmit="event.preventDefault(); uploadFiles();">
-        <label for="name">ชื่อผู้ใช้งาน:</label>
-        <input type="text" id="name" name="name" required><br><br>
-
-        <label for="files">แนบไฟล์:</label>
-        <input type="file" id="files" name="files" multiple required><br><br>
-        
-        <input type="submit" value="ส่งข้อมูล">
+<html>
+  <head>
+    <base target="_top">
+  </head>
+  <body>
+    <form id="uploadForm">
+      <label for="name">ชื่อ:</label>
+      <input type="text" id="name" name="name" required>
+      <br><br>
+      <label for="files">อัปโหลดไฟล์:</label>
+      <input type="file" id="files" name="files" multiple required>
+      <br><br>
+      <input type="submit" value="ส่ง">
     </form>
-</body>
+    <script>
+  const scriptURL = 'https://script.google.com/macros/s/AKfycbwnDY7R09IyVAXzM1v855-7bPSgzCDaL7JXaV4uELm6Cvm2OxKgP0zofpLPHSfeYU6UBw/exec'; // เปลี่ยนให้เป็น URL ของ Google Apps Script
+
+  document.getElementById('uploadForm').onsubmit = async function(e) {
+    e.preventDefault();
+
+    const name = document.getElementById('name').value;
+    const files = document.getElementById('files').files;
+    const folderName = new Date().toISOString().split('T')[0];
+    const fileDataArray = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const reader = new FileReader();
+      reader.readAsDataURL(files[i]);
+      reader.onload = function() {
+        const base64data = reader.result.split(',')[1];
+        fileDataArray.push({ name: files[i].name, data: base64data });
+
+        if (fileDataArray.length === files.length) {
+          // เมื่อโหลดไฟล์ครบแล้ว
+          const payload = {
+            name: name,
+            folderName: folderName,
+            files: JSON.stringify(fileDataArray) // แปลงเป็น JSON
+          };
+
+          fetch(scriptURL, {
+            method: 'POST',
+            body: JSON.stringify(payload),
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          })
+          .then(response => response.text())
+          .then(result => {
+            alert('ข้อมูลส่งเรียบร้อย!');
+            document.getElementById('uploadForm').reset(); // รีเซ็ตแบบฟอร์ม
+          })
+          .catch(error => console.error('Error:', error));
+        }
+      };
+    }
+  };
+</script>
+
+  </body>
 </html>
