@@ -3,32 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Form ถามอายุ</title>
+    <title>Upload Files</title>
+    <script>
+        async function uploadFiles() {
+            const name = document.getElementById('name').value;
+            const files = document.getElementById('files').files;
+            const fileDataArray = [];
+
+            for (const file of files) {
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    const base64Data = e.target.result.split(',')[1]; // Get base64 data
+                    const fileData = {
+                        name: file.name,
+                        mimeType: file.type,
+                        data: base64Data
+                    };
+                    fileDataArray.push(fileData);
+
+                    // If all files have been read, send data to the server
+                    if (fileDataArray.length === files.length) {
+                        const response = await fetch('https://script.google.com/macros/s/AKfycbycqXdUDKUZwah-YokApR1bLOu1vhNivPUqYVVS6UuygW7VugsSC_XvHduxda3Dwmp7/exec', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ name, files: JSON.stringify(fileDataArray) })
+                        });
+                        const result = await response.json();
+                        alert(result.message); // แสดงข้อความจาก Google Apps Script
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
 </head>
 <body>
-    <form id="ageForm" enctype="multipart/form-data">
-        <label for="age">กรุณากรอกอายุ:</label>
-        <input type="number" id="age" name="age" required><br><br>
-        
+    <h1>Upload Files</h1>
+    <form id="uploadForm" onsubmit="event.preventDefault(); uploadFiles();">
+        <label for="name">ชื่อผู้ใช้งาน:</label>
+        <input type="text" id="name" name="name" required><br><br>
+
         <label for="files">แนบไฟล์:</label>
         <input type="file" id="files" name="files" multiple required><br><br>
         
         <input type="submit" value="ส่งข้อมูล">
     </form>
-
-    <script>
-        document.getElementById('ageForm').addEventListener('submit', async function(event) {
-            event.preventDefault();
-
-            const formData = new FormData(this);
-            const response = await fetch('https://script.google.com/macros/s/AKfycbxZ9eFxaqKZQYFH1GMIb5QbViQj1HowsaQcivPFDxAMqFAjS_glOTpmiE8S5znIm0yC/exec', {
-                method: 'POST',
-                body: formData
-            });
-
-            const result = await response.json();
-            alert('ข้อมูลถูกส่งเรียบร้อยแล้ว: ' + result.link);
-        });
-    </script>
 </body>
 </html>
