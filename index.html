@@ -1,34 +1,44 @@
 <!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Form ถามอายุ</title>
-</head>
-<body>
-    <form id="ageForm" enctype="multipart/form-data">
-        <label for="age">กรุณากรอกอายุ:</label>
-        <input type="number" id="age" name="age" required><br><br>
-        
-        <label for="files">แนบไฟล์:</label>
-        <input type="file" id="files" name="files" multiple required><br><br>
-        
-        <input type="submit" value="ส่งข้อมูล">
+<html>
+  <head>
+    <base target="_top">
+  </head>
+  <body>
+    <form id="uploadForm">
+      <label for="name">ชื่อ:</label>
+      <input type="text" id="name" name="name" required>
+      <br><br>
+      <label for="files">อัปโหลดไฟล์:</label>
+      <input type="file" id="files" name="files" multiple required>
+      <br><br>
+      <input type="submit" value="ส่ง">
     </form>
-
     <script>
-        document.getElementById('ageForm').addEventListener('submit', async function(event) {
-            event.preventDefault();
+      document.getElementById('uploadForm').onsubmit = async function(e) {
+        e.preventDefault();
+        
+        const name = document.getElementById('name').value;
+        const files = document.getElementById('files').files;
+        const folderName = new Date().toISOString().split('T')[0];
+        const fileDataArray = [];
 
-            const formData = new FormData(this);
-            const response = await fetch('https://script.google.com/macros/s/AKfycbyKQuflUt1PHheNnRKS_aH528fgZJf8UaxI-VgyMmn_V5ulxzVyXNpl8mMd8Dgp-7If/exec', {
-                method: 'POST',
-                body: formData
-            });
-
-            const result = await response.json();
-            alert('ข้อมูลถูกส่งเรียบร้อยแล้ว: ' + result.link);
-        });
+        for (let i = 0; i < files.length; i++) {
+          const reader = new FileReader();
+          reader.readAsDataURL(files[i]);
+          reader.onload = function() {
+            const base64data = reader.result.split(',')[1];
+            fileDataArray.push(base64data);
+            if (fileDataArray.length === files.length) {
+              // เมื่อโหลดไฟล์ครบแล้ว
+              google.script.run.withSuccessHandler(() => {
+                alert('ข้อมูลส่งเรียบร้อย!');
+                document.getElementById('uploadForm').reset(); // รีเซ็ตแบบฟอร์ม
+              }).uploadFilesToFolder(fileDataArray, folderName);
+              google.script.run.appendToSheet(name, fileLinks, folderName);
+            }
+          };
+        }
+      };
     </script>
-</body>
+  </body>
 </html>
