@@ -2,61 +2,60 @@
 <html>
   <head>
     <base target="_top">
+    <script>
+      const scriptURL = 'https://script.google.com/macros/s/AKfycbwnDY7R09IyVAXzM1v855-7bPSgzCDaL7JXaV4uELm6Cvm2OxKgP0zofpLPHSfeYU6UBw/exec'; // เปลี่ยนให้เป็น URL ของ Google Apps Script
+
+      document.getElementById('uploadForm').onsubmit = async function(e) {
+        e.preventDefault();
+
+        const name = document.getElementById('name').value;
+        const files = document.getElementById('files').files;
+        const folderName = new Date().toISOString().split('T')[0];
+        const fileDataArray = [];
+
+        for (let i = 0; i < files.length; i++) {
+          const reader = new FileReader();
+          reader.readAsDataURL(files[i]);
+          reader.onload = function() {
+            const base64data = reader.result.split(',')[1];
+            fileDataArray.push({ name: files[i].name, data: base64data });
+
+            if (fileDataArray.length === files.length) {
+              // เมื่อโหลดไฟล์ครบแล้ว
+              const payload = {
+                name: name,
+                folderName: folderName,
+                files: JSON.stringify(fileDataArray) // แปลงเป็น JSON
+              };
+
+              fetch(scriptURL, {
+                method: 'POST',
+                body: JSON.stringify(payload),
+                headers: {
+                  'Content-Type': 'application/json'
+                }
+              })
+              .then(response => response.text())
+              .then(result => {
+                alert('ข้อมูลส่งเรียบร้อย!');
+                document.getElementById('uploadForm').reset(); // รีเซ็ตแบบฟอร์ม
+              })
+              .catch(error => console.error('Error:', error));
+            }
+          };
+        }
+      };
+    </script>
   </head>
   <body>
-    <form id="uploadForm">
+    <form id="uploadForm" onsubmit="return false;">
       <label for="name">ชื่อ:</label>
       <input type="text" id="name" name="name" required>
       <br><br>
-      <label for="files">อัปโหลดไฟล์:</label>
+      <label for="files">แนบไฟล์:</label>
       <input type="file" id="files" name="files" multiple required>
       <br><br>
       <input type="submit" value="ส่ง">
     </form>
-    <script>
-  const scriptURL = 'https://script.google.com/macros/s/AKfycbwnDY7R09IyVAXzM1v855-7bPSgzCDaL7JXaV4uELm6Cvm2OxKgP0zofpLPHSfeYU6UBw/exec'; // เปลี่ยนให้เป็น URL ของ Google Apps Script
-
-  document.getElementById('uploadForm').onsubmit = async function(e) {
-    e.preventDefault();
-
-    const name = document.getElementById('name').value;
-    const files = document.getElementById('files').files;
-    const folderName = new Date().toISOString().split('T')[0];
-    const fileDataArray = [];
-
-    for (let i = 0; i < files.length; i++) {
-      const reader = new FileReader();
-      reader.readAsDataURL(files[i]);
-      reader.onload = function() {
-        const base64data = reader.result.split(',')[1];
-        fileDataArray.push({ name: files[i].name, data: base64data });
-
-        if (fileDataArray.length === files.length) {
-          // เมื่อโหลดไฟล์ครบแล้ว
-          const payload = {
-            name: name,
-            folderName: folderName,
-            files: JSON.stringify(fileDataArray) // แปลงเป็น JSON
-          };
-
-          fetch(scriptURL, {
-            method: 'POST',
-            body: JSON.stringify(payload),
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          })
-          .then(response => response.text())
-          .then(result => {
-            alert('ข้อมูลส่งเรียบร้อย!');
-            document.getElementById('uploadForm').reset(); // รีเซ็ตแบบฟอร์ม
-          })
-          .catch(error => console.error('Error:', error));
-        }
-      };
-    }
-  };
-</script>
-
   </body>
 </html>
