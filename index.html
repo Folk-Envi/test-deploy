@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form ถามอายุ</title>
+</head>
+<body>
+    <form id="ageForm" enctype="multipart/form-data">
+        <label for="age">กรุณากรอกอายุ:</label>
+        <input type="number" id="age" name="age" required><br><br>
+        
+        <label for="files">แนบไฟล์:</label>
+        <input type="file" id="files" name="files" multiple required><br><br>
+        
+        <input type="submit" value="ส่งข้อมูล">
+    </form>
+
+    <script>
+        document.getElementById('ageForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(this);
+            const response = await fetch('https://script.google.com/macros/s/AKfycbyKQuflUt1PHheNnRKS_aH528fgZJf8UaxI-VgyMmn_V5ulxzVyXNpl8mMd8Dgp-7If/exec', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            alert('ข้อมูลถูกส่งเรียบร้อยแล้ว: ' + result.link);
+        });
+    </script>
+</body>
+</html>
