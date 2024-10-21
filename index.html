@@ -1,21 +1,23 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <base target="_top">
-  </head>
-  <body>
-    <form id="uploadForm">
-      <label for="name">ชื่อ:</label>
-      <input type="text" id="name" name="name" required>
-      <br><br>
-      <label for="files">อัปโหลดไฟล์:</label>
-      <input type="file" id="files" name="files" multiple required>
-      <br><br>
-      <input type="submit" value="ส่ง">
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form ถามอายุ</title>
+</head>
+<body>
+    <form id="ageForm" enctype="multipart/form-data">
+        <label for="age">กรุณากรอกอายุ:</label>
+        <input type="number" id="age" name="age" required><br><br>
+        
+        <label for="files">แนบไฟล์:</label>
+        <input type="file" id="files" name="files" multiple required><br><br>
+        
+        <input type="submit" value="ส่งข้อมูล">
     </form>
+
     <script>
-      
-      document.getElementById('uploadForm').addEventListener('submit', async function(event) {
+        document.getElementById('ageForm').addEventListener('submit', async function(event) {
             event.preventDefault();
 
             const formData = new FormData(this);
@@ -27,8 +29,6 @@
             const result = await response.json();
             alert('ข้อมูลถูกส่งเรียบร้อยแล้ว: ' + result.link);
         });
-        
-     
     </script>
-  </body>
+</body>
 </html>
